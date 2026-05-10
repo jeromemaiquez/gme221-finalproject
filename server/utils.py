@@ -20,6 +20,11 @@ def get_road_network(gdf: gpd.GeoDataFrame) -> nx.MultiDiGraph:
 
     return G
 
+def graph_to_gdf(graph: nx.MultiDiGraph) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
+    """Converts a MultiDiGraph to node and/or edge GeoDataFrames, for further processing."""
+    gdf_nodes, gdf_edges = ox.graph_to_gdfs(graph)
+    return gdf_nodes, gdf_edges
+
 def save_graph_geopackage(graph: nx.MultiDiGraph, filepath: str| Path) -> None:
     """Save graph nodes and edges to disk as layers in a GeoPackage file."""
     ox.save_graph_geopackage(graph, filepath)
