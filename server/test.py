@@ -10,6 +10,7 @@ OUTPUT_DIR = WORK_DIR / "output"
 
 fp_admin = DATA_DIR / "phl_admbnda_adm4_psa_namria_20231106.zip"
 fp_output = OUTPUT_DIR / "Antipolo_RoadNetwork.gpkg"
+fp_entry = OUTPUT_DIR / "Antipolo_RoadEntryPoints.gpkg"
 
 # Step 1: define AOI
 
@@ -27,3 +28,9 @@ g_roads = u.get_road_network(gdf_admin)
 gdf_nodes, gdf_edges = u.graph_to_gdf(g_roads)
 
 # save_graph_geopackage(g_roads, fp_output)
+
+# Step 3: get destination points for accessibility analysis (major entry points into AOI)
+
+gdf_entry = u.get_destinations(gdf_edges, gdf_admin)
+
+gdf_entry.to_file(fp_entry)

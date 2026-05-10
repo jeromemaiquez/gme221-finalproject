@@ -28,3 +28,23 @@ def graph_to_gdf(graph: nx.MultiDiGraph) -> tuple[gpd.GeoDataFrame, gpd.GeoDataF
 def save_graph_geopackage(graph: nx.MultiDiGraph, filepath: str| Path) -> None:
     """Save graph nodes and edges to disk as layers in a GeoPackage file."""
     ox.save_graph_geopackage(graph, filepath)
+
+def get_destinations(gdf_roads: gpd.GeoDataFrame, gdf_borders: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    """
+    Returns a GeoDataFrame of the destination points for the road network,
+    assumed to be the major (primary/secondary) road-based entry/exit points for the AOI.
+    """
+    border = gdf_borders.geometry.union_all("coverage").exterior
+
+    gdf_major_roads = gdf_roads[gdf_roads["highway"].isin(["primary", "secondary"])]
+    
+    gdf_entry_roads = gdf_major_roads[gdf_major_roads.intersects(border)]
+    entry_points = gdf_entry_roads.geometry.intersection(border)
+
+    gdf_entry_roads = gpd.GeoDataFrame(
+        data=gdf_entry_roads.drop(columns=["geometry"]),
+        geometry=entry_points,
+        crs=gdf_entry_roads.crs
+    )
+
+    return gdf_entry_roads
