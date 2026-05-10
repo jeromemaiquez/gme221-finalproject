@@ -19,12 +19,13 @@ This project aims to **analyze the impacts of flood inundation** on **road-based
 1. Download & pre-process road network in AOI
     - Simplify nodes
     - Assign edge lengths, speed, and travel time
-    - Assign node population
+    - Assign node population (overlay w/ gridded population)
 2. Remove inundated road segments for different flood return periods
     - Flood threshold: NOAH flood category $\geq 2$ ($\geq 0.5$ meters flood depth)
     - ...Which corresponds to the MMDA threshold for NPAV flood rating (not passable to ALL types of vehicles)
     - BONUS: Will compute betweenness centrality before & after removal of inundated segments
 3. Compute accessibility index (before & after flooding)
+    - Destinations: major road-based entry points into AOI
     - Potential accessibility per Destination i: $$ \mathit{PA_i} = \sum_{j} \frac{P_j}{T_{ij}} $$
 
     > - $P_j =$ population size at origin j
