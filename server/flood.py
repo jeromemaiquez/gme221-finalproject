@@ -27,7 +27,7 @@ def get_edge_flood_depths(gdf_edges: gpd.GeoDataFrame, raster_path: str | Path, 
 
     print(f"Sampling {len(unique_pts)} points from raster...")
     with rio.open(raster_path) as src:
-        depths = [val[0] for val in src.sample(unique_pts)]
+        depths = [val[0] if val[0] != 255 else 0 for val in src.sample(unique_pts)]
 
     edge_depths = {idx: 0.0 for idx in gdf_edges.index}
     for coord_idx, depth in enumerate(depths):
@@ -38,9 +38,31 @@ def get_edge_flood_depths(gdf_edges: gpd.GeoDataFrame, raster_path: str | Path, 
     
     return edge_depths
 
-def remove_inundated_roads(graph_roads: nx.MultiDiGraph, edge_depths: dict, threshold: int = 1.0) -> nx.MultiDiGraph:
+def remove_inundated_roads(graph_roads: nx.MultiDiGraph, edge_depths: dict, threshold: int = 2.0) -> nx.MultiDiGraph:
     """Returns a flooded version of the original road network, where flooded roads are deemed impassable and removed."""
-    flooded_edges = [idx for idx, d in edge_depths.items() if d > threshold]
+    # flooded_edges = [idx for idx, d in edge_depths.items() if d >= threshold]
+
+    protected_highways = {"primary", "secondary"}
+
+    flooded_edges = []
+
+    for edge_id, depth in edge_depths.items():
+        if depth < threshold:
+            continue
+
+        # Get highway type per road edge
+        u, v, k = edge_id
+        edge_data = graph_roads[u][v][k]
+        highway = edge_data.get("highway")
+
+        # Check if highway type is protected
+        if isinstance(highway, list):
+            is_protected = any(h in protected_highways for h in highway)
+        else:
+            is_protected = highway in protected_highways
+
+        if not is_protected:
+            flooded_edges.append(edge_id)
 
     graph_flooded = graph_roads.copy()
     graph_flooded.remove_edges_from(flooded_edges)
