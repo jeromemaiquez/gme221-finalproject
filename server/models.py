@@ -117,7 +117,7 @@ def network_accessibility(
     - P_i = total population at destination i
     """
     def network_access_formula(potential_acc: pd.Series | np.ndarray, population: pd.Series | np.ndarray):
-        return np.sum(potential_acc * population) / np.sum(population)
+        return round(np.sum(potential_acc * population) / np.sum(population), 2)
 
     network_access_per_rp = {"baseline": network_access_formula(gdf_entry["pa_baseline"], gdf_entry["population"])}
 
