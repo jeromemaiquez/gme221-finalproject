@@ -38,6 +38,10 @@ This project aims to **analyze the impacts of flood inundation** on **road-based
 
 4. Identify areas isolated due to flooding (and measure their population size)
 
+## Assumptions
+- Primary and secondary roads assumed to never get inundated to the point of being impassable (only for analysis purposes)
+- Only entry points along primary & secondary roads are included (excluded tertiary entry points)
+
 ## Outputs
 - Charts/tables of accessibility metrics
 - Map of betweenness centrality on road network
