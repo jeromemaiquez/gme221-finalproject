@@ -1,0 +1,63 @@
+import osmnx as ox
+import networkx as nx
+import geopandas as gpd
+import pandas as pd
+import numpy as np
+
+def potential_accessibility(
+        graph_roads: nx.MultiDiGraph, 
+        gdf_orig: gpd.GeoDataFrame,
+        gdf_dest: gpd.GeoDataFrame,   
+        population: str
+    ):
+    """
+    Calculates the potential accessibility $\mathit{PA_i}$ for each destination $i$.
+    $$\mathit{PA_i} = \sum_{j} \frac{P_j}{T_{ij}} $$, where: 
+    - $P_j$: population at origin $j$
+    - $T_{ij}$: travel time from j to i 
+    """
+    pa_per_dest = {}
+
+    for idx, row in gdf_dest.iterrows():
+        dest_node = ox.distance.nearest_nodes(
+            graph_roads, 
+            row["geometry"].x, 
+            row["geometry"].y
+        )
+
+        orig_nodes = ox.distance.nearest_nodes(
+            graph_roads, 
+            gdf_orig.geometry.x, 
+            gdf_orig.geometry.y
+        )
+
+        dest_nodes = [dest_node] * len(orig_nodes)
+
+        routes = ox.routing.shortest_path(
+            graph_roads,
+            orig_nodes,
+            dest_nodes,
+            weight="travel_time"
+        )
+
+        travel_times = []
+        inaccessible_origins = []
+        
+        for orig_idx, route in enumerate(routes):
+            if route is None:
+                inaccessible_origins.append(orig_idx)
+                continue
+            gdf_route_edges = ox.routing.route_to_gdf(
+                graph_roads,
+                route,
+                weight="travel_time"
+            )
+            travel_times.append(gdf_route_edges["travel_time"].sum())
+
+        populations = gdf_orig.loc[~gdf_orig.index.isin(inaccessible_origins), population]
+
+        potential_acc = np.sum(np.array(travel_times) / np.array(populations))
+
+        pa_per_dest[idx] = potential_acc
+    
+    return pa_per_dest
