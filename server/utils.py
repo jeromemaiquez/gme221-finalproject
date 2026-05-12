@@ -26,9 +26,22 @@ def graph_to_gdf(graph: nx.MultiGraph) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFra
     gdf_nodes, gdf_edges = ox.graph_to_gdfs(graph)
     return gdf_nodes, gdf_edges
 
+# def save_graph_geopackage(graph: nx.MultiGraph, filepath: str| Path) -> None:
+#     """Save graph nodes and edges to disk as layers in a GeoPackage file."""
+#     ox.save_graph_geopackage(graph, filepath)
+
 def save_graph_geopackage(graph: nx.MultiGraph, filepath: str| Path) -> None:
     """Save graph nodes and edges to disk as layers in a GeoPackage file."""
-    ox.save_graph_geopackage(graph, filepath)
+    if isinstance(filepath, str):
+        not_gpkg = not filepath.endswith(".gpkg")
+    elif isinstance(filepath, Path):
+        not_gpkg = filepath.suffix != ".gpkg"
+    
+    if not_gpkg:
+        raise ValueError("Output filepath must be GeoPackage (.gpkg)")
+    gdf_nodes, gdf_edges = graph_to_gdf(graph)
+    gdf_nodes.to_file(filepath, driver="GPKG", layer="nodes")
+    gdf_edges.to_file(filepath, driver="GPKG", layer="edges")
 
 def get_destinations(gdf_roads: gpd.GeoDataFrame, gdf_borders: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """

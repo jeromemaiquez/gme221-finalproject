@@ -31,10 +31,7 @@ gdf_admin = gdf_admin[(gdf_admin["ADM4_EN"].isin(barangays)) & (gdf_admin["ADM3_
 # Step 2: download road network + get nodes & edges as GeoDataFrames
 
 g_roads = utils.get_road_network(gdf_admin)
-
 gdf_nodes, gdf_edges = utils.graph_to_gdf(g_roads)
-
-# utils.save_graph_geopackage(g_roads, fp_output)
 
 # Step 3: get destination points for accessibility analysis (major entry points into AOI)
 
@@ -44,10 +41,14 @@ gdf_entry = utils.get_destinations(gdf_edges, gdf_admin)
 da_pop = population.clip_raster(fp_pop_raster, gdf_admin)
 gdf_pop = population.raster_to_points(da_pop, value_name="population")
 
+# Assign betweenness centrality to road network edges
+g_roads = models.betweenness_centrality(g_roads, gdf_entry, gdf_pop)
+utils.save_graph_geopackage(g_roads, fp_output)
+# gdf_pop.to_file(fp_pop_points)
+
 # Assign population to entry points
 # gdf_entry = population.nearest_pop_point(gdf_entry, gdf_pop)
 gdf_entry = population.voronoi_total_pop_per_dest(g_roads, gdf_entry, gdf_pop)
-# gdf_pop.to_file(fp_pop_points)
 
 # Step 5: calculate potential accessibility for baseline conditions
 print(f"Is the road network empty? {nx.is_empty(g_roads)}")
@@ -66,6 +67,7 @@ for fp in fps_flood:
     
     print(f"Analyzing flood return period: {return_period}")
     fp_out_flooded = OUTPUT_DIR / f"Antipolo_RoadNetwork_Flood{return_period}.gpkg"
+    fp_out_isolated = OUTPUT_DIR / f"Antipolo_IsolatedNetwork_Flood{return_period}.gpkg"
 
     # Sample flood depths along road edges for every 20 meters
     edge_depths = flood.get_edge_flood_depths(gdf_edges, fp, step_size=20)
@@ -73,7 +75,11 @@ for fp in fps_flood:
     # Remove road edges if its maximum NOAH flood rating >= 2 (at least 0.5 meters) 
     # Excluding primary/secondary highways (to ensure access to entry points)
     graph_flooded = flood.remove_inundated_roads(g_roads, edge_depths, threshold=2)
-    # utils.save_graph_geopackage(graph_flooded, fp_out_flooded)
+    graph_flooded = models.betweenness_centrality(graph_flooded, gdf_entry, gdf_pop)
+    utils.save_graph_geopackage(graph_flooded, fp_out_flooded)
+
+    graph_isolated = models.isolated_areas(graph_flooded)
+    utils.save_graph_geopackage(graph_isolated, fp_out_isolated)
 
     # Calculate potential accessibility per destination per return period
     potential_acc_per_dest = models.potential_accessibility(

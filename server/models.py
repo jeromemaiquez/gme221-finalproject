@@ -64,6 +64,39 @@ import numpy as np
     
 #     return pa_per_dest
 
+def betweenness_centrality(
+        graph_roads: nx.MultiGraph,
+        gdf_dest: gpd.GeoDataFrame,
+        gdf_pop: gpd.GeoDataFrame,
+):
+    """
+    Computes the betweenness centrality for each edge in the road network.
+    Betweenness centrality is the share of all shortest paths that pass through a given edge.
+    This is a proxy measure of a specific road segment's criticality in the network.
+    """
+    dest_nodes = ox.distance.nearest_nodes(
+        graph_roads,
+        gdf_dest.geometry.x.to_numpy(),
+        gdf_dest.geometry.y.to_numpy()
+    )
+    dest_indices = list(gdf_dest.index)
+
+    # orig_nodes = [n for n in graph_roads if n not in dest_indices]
+
+    orig_nodes = ox.distance.nearest_nodes(
+        graph_roads,
+        gdf_pop.geometry.x.to_numpy(),
+        gdf_pop.geometry.y.to_numpy()
+    )
+
+    eb_centrality = nx.edge_betweenness_centrality_subset(
+        graph_roads, orig_nodes, dest_nodes, normalized=True, weight="travel_time"
+    )
+
+    nx.set_edge_attributes(graph_roads, eb_centrality, "betweenness")
+
+    return graph_roads
+
 def potential_accessibility(
         graph_roads: nx.MultiGraph, 
         gdf_orig: gpd.GeoDataFrame,
@@ -131,3 +164,18 @@ def network_accessibility(
         )
     
     return network_access_per_rp
+
+def isolated_areas(graph_roads: nx.MultiGraph):
+    """
+    Returns an nx.MultiGraph containing only the portions of the AOI
+    that are disconnected from the rest of the road network.
+    """
+    components = sorted(nx.connected_components(graph_roads), key=len, reverse=True)
+
+    if len(components) > 1:
+        nodes_isolated_areas = set().union(*components[1:])
+        graph_isolated_areas = graph_roads.subgraph(nodes_isolated_areas).copy()
+    else:
+        graph_isolated_areas = nx.null_graph()
+    
+    return graph_isolated_areas
