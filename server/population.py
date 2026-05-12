@@ -2,14 +2,16 @@ import rioxarray as rxr
 import xarray as xr
 import pandas as pd
 import geopandas as gpd
+from shapely import to_geojson
+import geojson
 from pathlib import Path
 
 def clip_raster(fp_raster: str | Path, gdf_borders: gpd.GeoDataFrame):
     """Clips a raster (xarray.DataArray) using the geometric union of a GeoDataFrame."""
-    da = rxr.open_rasterio(fp_raster, masked=True).squeeze()
-    borders = gdf_borders.geometry.union_all()
+    da = rxr.open_rasterio(fp_raster, masked=True)
+    borders = [geojson.loads(to_geojson(gdf_borders.geometry.make_valid(method="structure").union_all()))]
     
-    da_clipped = da.rio.clip(borders)
+    da_clipped = da.rio.clip(borders, crs=gdf_borders.crs).squeeze()
     return da_clipped
 
 def raster_to_points(da_raster: xr.DataArray, value_name: str = "population"):

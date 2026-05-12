@@ -4,6 +4,7 @@ from pathlib import Path
 
 import utils
 import flood
+import population
 
 WORK_DIR = Path().resolve()
 DATA_DIR = WORK_DIR / "data"
@@ -13,6 +14,8 @@ fp_admin = DATA_DIR / "phl_admbnda_adm4_psa_namria_20231106.zip"
 fp_output = OUTPUT_DIR / "Antipolo_RoadNetwork.gpkg"
 fp_entry = OUTPUT_DIR / "Antipolo_RoadEntryPoints.gpkg"
 fps_flood = (DATA_DIR / "flood").glob("*.tif")
+fp_pop_raster = DATA_DIR / "phl_pop_2025_CN_100m_R2025A_v1.tif"
+fp_pop_points = OUTPUT_DIR / "Antipolo_PopPoints.gpkg"
 
 # Step 1: define AOI
 
@@ -37,7 +40,12 @@ gdf_nodes, gdf_edges = utils.graph_to_gdf(g_roads)
 
 # gdf_entry.to_file(fp_entry)
 
-# Step 4: generate flooded versions of original road network
+# Step 4: generate population point grid
+da_pop = population.clip_raster(fp_pop_raster, gdf_admin)
+gdf_pop = population.raster_to_points(da_pop, value_name="population")
+gdf_pop.to_file(fp_pop_points)
+
+# Step 5: generate flooded versions of original road network
 
 for fp in fps_flood:
     _, _, return_period, _, _ = fp.stem.split("_")
