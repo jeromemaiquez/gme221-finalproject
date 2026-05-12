@@ -43,6 +43,10 @@ gdf_entry = utils.get_destinations(gdf_edges, gdf_admin)
 # Step 4: generate population point grid
 da_pop = population.clip_raster(fp_pop_raster, gdf_admin)
 gdf_pop = population.raster_to_points(da_pop, value_name="population")
+
+# Assign population to entry points
+# gdf_entry = population.nearest_pop_point(gdf_entry, gdf_pop)
+gdf_entry = population.voronoi_total_pop_per_dest(g_roads, gdf_entry, gdf_pop)
 # gdf_pop.to_file(fp_pop_points)
 
 # Step 5: calculate potential accessibility for baseline conditions

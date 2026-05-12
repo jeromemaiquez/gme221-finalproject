@@ -38,7 +38,7 @@ def get_edge_flood_depths(gdf_edges: gpd.GeoDataFrame, raster_path: str | Path, 
     
     return edge_depths
 
-def remove_inundated_roads(graph_roads: nx.MultiDiGraph, edge_depths: dict, threshold: int = 2.0) -> nx.MultiDiGraph:
+def remove_inundated_roads(graph_roads: nx.MultiGraph, edge_depths: dict, threshold: int = 2.0) -> nx.MultiGraph:
     """Returns a flooded version of the original road network, where flooded roads are deemed impassable and removed."""
     # flooded_edges = [idx for idx, d in edge_depths.items() if d >= threshold]
 
