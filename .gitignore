@@ -6,4 +6,5 @@ cache/
 server/__pycache__/
 data/*.zip
 data/**/*.tif
+**/*.qgz
 output/*.gpkg
