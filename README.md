@@ -41,6 +41,7 @@ This project aims to **analyze the impacts of flood inundation** on **road-based
 ## Assumptions
 - Primary and secondary roads assumed to never get inundated to the point of being impassable (only for analysis purposes)
 - Only entry points along primary & secondary roads are included (excluded tertiary entry points)
+- Assumes bidirectional roads (one-way roads not modeled) to prevent doubling of entry points in bidirectional roads with no middle island
 
 ## Outputs
 - Charts/tables of accessibility metrics
