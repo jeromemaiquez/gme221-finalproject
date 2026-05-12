@@ -37,26 +37,27 @@ def potential_accessibility(
             graph_roads,
             orig_nodes,
             dest_nodes,
-            weight="travel_time"
+            weight="travel_time",
         )
 
-        travel_times = []
-        inaccessible_origins = []
-        
+        potential_acc = 0
+
         for orig_idx, route in enumerate(routes):
-            if route is None:
-                inaccessible_origins.append(orig_idx)
+            if route is None or len(route) < 1:
                 continue
-            gdf_route_edges = ox.routing.route_to_gdf(
-                graph_roads,
-                route,
-                weight="travel_time"
-            )
-            travel_times.append(gdf_route_edges["travel_time"].sum())
 
-        populations = gdf_orig.loc[~gdf_orig.index.isin(inaccessible_origins), population]
+            if len(route) < 2:
+                travel_time = 1   # Small value to replace 0
+            else:
+                gdf_route_edges = ox.routing.route_to_gdf(
+                    graph_roads,
+                    route,
+                    weight="travel_time"
+                )
+                travel_time = gdf_route_edges["travel_time"].sum()
 
-        potential_acc = np.sum(np.array(travel_times) / np.array(populations))
+            pop = gdf_orig.iloc[orig_idx][population]
+            potential_acc += pop / travel_time
 
         pa_per_dest[idx] = potential_acc
     
