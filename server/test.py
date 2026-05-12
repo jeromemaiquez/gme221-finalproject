@@ -86,3 +86,6 @@ for fp in fps_flood:
     gdf_entry[pa_col_name] = gdf_entry.index.map(potential_acc_per_dest)
 
 gdf_entry.to_file(fp_entry)
+
+network_access = models.network_accessibility(gdf_entry)
+print(network_access)

@@ -103,3 +103,31 @@ def potential_accessibility(
         pa_per_dest[idx] = np.sum(populations / np.where(tt_vals < 2, 1.0, tt_vals))
 
     return pa_per_dest
+
+def network_accessibility(
+        gdf_entry: gpd.GeoDataFrame,
+        potential_acc_prefix: str = "pa",
+        pop_col: str = "population",
+        return_periods: list[int] = [5, 25, 100],
+        return_period_suffix: str = "year"
+):
+    """
+    Calculates network-wide accessibility A_r for different flooding return periods r.
+    A_r = (sum_i(PA_i * P_i)) / sum_i(P_i), where:
+    - P_i = total population at destination i
+    """
+    def network_access_formula(potential_acc: pd.Series | np.ndarray, population: pd.Series | np.ndarray):
+        return np.sum(potential_acc * population) / np.sum(population)
+
+    network_access_per_rp = {"baseline": network_access_formula(gdf_entry["pa_baseline"], gdf_entry["population"])}
+
+    for rp in return_periods:
+        pa_flooded_col = f"{potential_acc_prefix}_{rp}{return_period_suffix}"
+        pa_flooded_key = f"{rp}_{return_period_suffix}"
+
+        network_access_per_rp[pa_flooded_key] = network_access_formula(
+            gdf_entry[pa_flooded_col],
+            gdf_entry["population"]
+        )
+    
+    return network_access_per_rp
