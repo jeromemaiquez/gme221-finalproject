@@ -7,4 +7,6 @@ server/__pycache__/
 data/*.zip
 data/**/*.tif
 **/*.qgz
+**/*.gpkg-wal
+**/*.gpkg-shm
 output/*.gpkg

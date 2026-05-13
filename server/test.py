@@ -1,12 +1,15 @@
-import pandas as pd
+import numpy as np
 import geopandas as gpd
 import networkx as nx
+import matplotlib.pyplot as plt
+from matplotlib import lines as mlines
 from pathlib import Path
 
 import utils
 import flood
 import population
 import models
+import visualization as viz
 
 WORK_DIR = Path().resolve()
 DATA_DIR = WORK_DIR / "data"
@@ -18,6 +21,8 @@ fp_entry = OUTPUT_DIR / "Antipolo_RoadEntryPoints.gpkg"
 fps_flood = (DATA_DIR / "flood").glob("*.tif")
 fp_pop_raster = DATA_DIR / "phl_pop_2025_CN_100m_R2025A_v1.tif"
 fp_pop_points = OUTPUT_DIR / "Antipolo_PopPoints.gpkg"
+fp_isolated_map = OUTPUT_DIR / "Antipolo_MapIsolatedNetwork.png"
+fp_between_map = OUTPUT_DIR / "Antipolo_MapBetweennessCentrality.png"
 
 # Step 1: define AOI
 
@@ -62,6 +67,9 @@ gdf_entry["pa_baseline"] = gdf_entry.index.map(baseline_potential_acc)
 
 # Step 6: generate flooded versions of original road network
 
+flooded_graphs = {}
+isolated_graphs = {}
+
 for fp in fps_flood:
     _, _, return_period, _, _ = fp.stem.split("_")
     
@@ -76,9 +84,11 @@ for fp in fps_flood:
     # Excluding primary/secondary highways (to ensure access to entry points)
     graph_flooded = flood.remove_inundated_roads(g_roads, edge_depths, threshold=2)
     graph_flooded = models.betweenness_centrality(graph_flooded, gdf_entry, gdf_pop)
+    flooded_graphs[return_period] = graph_flooded
     utils.save_graph_geopackage(graph_flooded, fp_out_flooded)
 
     graph_isolated = models.isolated_areas(graph_flooded)
+    isolated_graphs[return_period] = graph_isolated
     utils.save_graph_geopackage(graph_isolated, fp_out_isolated)
 
     # Calculate potential accessibility per destination per return period
@@ -95,3 +105,20 @@ gdf_entry.to_file(fp_entry)
 
 network_access = models.network_accessibility(gdf_entry)
 print(network_access)
+
+# Step 7. Plot isolated areas
+viz.plot_isolated_areas(
+    graph_baseline=g_roads,
+    flooded_graphs=flooded_graphs,
+    isolated_graphs=isolated_graphs,
+    fp_output=fp_isolated_map,
+    plot_theme="light"
+)
+
+viz.plot_betweenness(
+    graph_baseline=g_roads,
+    flooded_graphs=flooded_graphs,
+    fp_output=fp_between_map,
+    # plot_theme="light",
+    cmap="inferno"
+)
