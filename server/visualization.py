@@ -4,6 +4,8 @@ from matplotlib import lines as mlines
 from matplotlib.font_manager import FontProperties
 
 # import contextily as cx
+# import geopandas as gpd
+import pandas as pd
 import seaborn as sns
 import osmnx as ox
 import networkx as nx
@@ -417,4 +419,71 @@ def plot_network_access(network_access_per_rp: dict, fp_output: str | Path | Non
     if fp_output:
         plt.savefig(fp_output)
     
+    return fig, ax
+
+def plot_potential_access(
+        df_entry: pd.GeoDataFrame,
+        potential_acc_prefix: str = "pa",
+        fp_output: str | Path | None = None
+):
+    """
+    Creates a line plot of potential accessibility scores
+    for each major entry point in the road network.
+    """
+    sns.set_style("whitegrid")
+    sns.set_context('talk')
+    
+    ft_color = "#000000"
+    bg_color = "#eeeeee"
+
+    font_bold, font_medium, font_regular, font_legend = get_fonts("Fira Sans")
+
+    pa_cols = [col for col in df_entry.columns if col.startswith(f"{potential_acc_prefix}_")]
+    id_cols = [col for col in df_entry.columns if col not in pa_cols]
+    df_melt = df_entry.melt(
+        id_vars=id_cols, 
+        value_vars=pa_cols,
+        var_name="rp", 
+        value_name="potential_acc",
+    )
+    df_melt["name"] = df_melt["name"].apply(
+        lambda x: x[0] if isinstance(x, list) else x
+    )
+
+    fig, ax = plt.subplots(figsize=(12, 6), facecolor=bg_color)
+    # sns.pointplot(
+    g = sns.catplot(
+        kind="point",
+        data=df_melt,
+        x="rp",
+        y="potential_acc",
+        # hue="name",
+        col="name",
+        col_wrap=3,
+        marker="s",
+        sharey=True,
+        sharex=True,
+        color=ft_color,
+        # estimator="first", 
+        errorbar=None,
+    )
+
+    g.set_titles("{col_name}")
+
+    plt.suptitle(
+        "Potential Accessibility per Entry Point across Return Periods",
+        fontsize=24,
+        font=font_bold,
+        ha="center", y=0.96
+    )
+
+    plt.xlabel("Return Period", font=font_medium, fontsize=20)
+    plt.ylabel("Network Accessibility", font=font_medium, fontsize=20)
+    plt.xticks(ticks=[0, 1, 2, 3], labels=["No Flooding", "5 years", "25 years", "100 years"])
+
+    plt.tight_layout()
+
+    if fp_output:
+        plt.savefig(fp_output)
+
     return fig, ax

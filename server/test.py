@@ -21,9 +21,11 @@ fp_entry = OUTPUT_DIR / "Antipolo_RoadEntryPoints.gpkg"
 fps_flood = (DATA_DIR / "flood").glob("*.tif")
 fp_pop_raster = DATA_DIR / "phl_pop_2025_CN_100m_R2025A_v1.tif"
 fp_pop_points = OUTPUT_DIR / "Antipolo_PopPoints.gpkg"
+
 fp_isolated_map = OUTPUT_DIR / "Antipolo_MapIsolatedNetwork.png"
 fp_between_map = OUTPUT_DIR / "Antipolo_MapBetweennessCentrality.png"
 fp_network_plot = OUTPUT_DIR / "NetworkAccess_PerFloodRP.png"
+fp_potential_plot = OUTPUT_DIR / "PotentialAccess_PerEntryPoint.png"
 
 # Step 1: define AOI
 
@@ -42,6 +44,14 @@ gdf_nodes, gdf_edges = utils.graph_to_gdf(g_roads)
 # Step 3: get destination points for accessibility analysis (major entry points into AOI)
 
 gdf_entry = utils.get_destinations(gdf_edges, gdf_admin)
+gdf_entry["name"] = [
+    "Marcos Highway - Cubao Eastbound",
+    "Sumulong Highway - Antipolo",
+    "Marcos Highway - Cogeo",
+    "B. V. Soliven Avenue",
+    "Marcos Highway - Cubao Westbound",
+    "Sumulong Highway - Marikina",
+]
 
 # Step 4: generate population point grid
 da_pop = population.clip_raster(fp_pop_raster, gdf_admin)
@@ -127,4 +137,9 @@ viz.plot_betweenness(
 viz.plot_network_access(
     network_access,
     fp_network_plot
+)
+
+viz.plot_potential_access(
+    gdf_entry,
+    fp_output=fp_potential_plot
 )
