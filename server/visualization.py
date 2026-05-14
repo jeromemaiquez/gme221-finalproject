@@ -377,6 +377,7 @@ def plot_network_access(network_access_per_rp: dict, fp_output: str | Path | Non
     font_bold, font_medium, font_regular, font_legend = get_fonts("Fira Sans")
 
     fig, ax = plt.subplots(figsize=(10, 6), facecolor=bg_color)
+    ax.set_facecolor(bg_color)
     sns.pointplot(
         x=network_access_per_rp.keys(),
         y=network_access_per_rp.values(),
@@ -468,7 +469,7 @@ def plot_potential_access(
         errorbar=None,
     )
 
-    g.set_titles("{col_name}")
+    g.set_titles("{col_name}", font=font_medium)
 
     plt.suptitle(
         "Potential Accessibility per Entry Point across Return Periods",
@@ -478,6 +479,10 @@ def plot_potential_access(
     )
 
     g.set_axis_labels("Return Period", "Network Accessibility", font=font_medium, fontsize=20)
+    g.set_xticklabels(font=font_regular)
+    for ax in g.axes.flat:
+        for label in ax.get_yticklabels():
+            label.set_fontproperties(FontProperties(fname=font_regular.get_file()))
     # plt.ylabel("Network Accessibility", font=font_medium, fontsize=20)
     plt.xticks(ticks=[0, 1, 2, 3], labels=["No Flood", "5 yrs", "25 yrs", "100 yrs"])
 
