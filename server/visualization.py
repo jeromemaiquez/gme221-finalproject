@@ -477,9 +477,9 @@ def plot_potential_access(
         ha="center", y=0.96
     )
 
-    plt.xlabel("Return Period", font=font_medium, fontsize=20)
-    plt.ylabel("Network Accessibility", font=font_medium, fontsize=20)
-    plt.xticks(ticks=[0, 1, 2, 3], labels=["No Flooding", "5 years", "25 years", "100 years"])
+    g.set_axis_labels("Return Period", "Network Accessibility", font=font_medium, fontsize=20)
+    # plt.ylabel("Network Accessibility", font=font_medium, fontsize=20)
+    plt.xticks(ticks=[0, 1, 2, 3], labels=["No Flood", "5 yrs", "25 yrs", "100 yrs"])
 
     plt.tight_layout()
 
