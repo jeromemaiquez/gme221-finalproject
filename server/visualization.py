@@ -4,6 +4,7 @@ from matplotlib import lines as mlines
 from matplotlib.font_manager import FontProperties
 
 # import contextily as cx
+import seaborn as sns
 import osmnx as ox
 import networkx as nx
 import pyfonts
@@ -58,35 +59,14 @@ def plot_graph(
     """Plots a road network graph."""
     node_size = 0
     show = False
-    street_widths = {
-        "primary": 2,
-        "secondary": 1.5,
-        "tertiary": 1,
-        "residential": 0.5,
-        "unclassified": 1
-    }
 
     if not ax:
         _, ax = plt.subplots()
     
     edge_widths = get_edge_widths(graph_roads, default_width)
-    # _, ax = ox.plot.plot_figure_ground(
-    #     G=graph_roads, 
-    #     dist=3_250,
-    #     street_widths=street_widths,
-    #     default_width=default_width,
-    #     edge_color=edge_color, 
-    #     bgcolor=bg_color,
-    #     node_size=node_size, 
-    #     show=show, ax=ax,
-    #     edge_alpha=edge_alpha
-    # )
 
     _, ax = ox.plot.plot_graph(
         G=graph_roads, 
-        # dist=3_250,
-        # street_widths=street_widths,
-        # default_width=default_width,
         edge_linewidth=edge_widths,
         edge_color=edge_color, 
         bgcolor=bg_color,
@@ -97,6 +77,32 @@ def plot_graph(
     )
 
     return ax
+
+def get_fonts(font_name: str, legend: str = "medium", legend_size: str = "xx-large"):
+    """
+    Return regular, medium, and bold font versions for a given font name.
+    Also, allows the selection of which version to use for the legend.
+    """
+    font_bold = pyfonts.load_google_font("Fira Sans", weight="bold")
+    font_medium = pyfonts.load_google_font("Fira Sans", weight="medium")
+    font_regular = pyfonts.load_google_font("Fira Sans", weight="regular")
+
+    match legend:
+        case "bold":
+            font_legend = font_bold
+        case "medium":
+            font_legend = font_medium
+        case "regular":
+            font_legend = font_regular
+
+    font_legend_prop = FontProperties(
+        family=font_legend.get_family(),
+        weight=font_legend.get_weight(),
+        size=legend_size,
+        fname=font_legend.get_file()
+    )
+
+    return font_bold, font_medium, font_regular, font_legend_prop
 
 def plot_isolated_areas(
         graph_baseline: nx.MultiGraph,
@@ -115,23 +121,25 @@ def plot_isolated_areas(
 
     if plot_theme == "dark":
         bg_color = "#111111"
-        ft_color = "#999999"
+        ft_color = "#eeeeee"
     elif plot_theme == "light":
         bg_color = "#eeeeee"
         ft_color = "#333333"
     else:
         raise ValueError("Parameter `plot_theme` must be `dark` or `light`.")
 
-    font_bold = pyfonts.load_google_font("Fira Sans", weight="bold")
-    font_medium = pyfonts.load_google_font("Fira Sans", weight="medium")
-    font_regular = pyfonts.load_google_font("Fira Sans", weight="regular")
+    font_bold, font_medium, font_regular, font_legend = get_fonts("Fira Sans")
 
-    font_medium_legend = FontProperties(
-        family=font_medium.get_family(),
-        weight=font_medium.get_weight(),
-        size="xx-large",
-        fname=font_regular.get_file()
-    )
+    # font_bold = pyfonts.load_google_font("Fira Sans", weight="bold")
+    # font_medium = pyfonts.load_google_font("Fira Sans", weight="medium")
+    # font_regular = pyfonts.load_google_font("Fira Sans", weight="regular")
+
+    # font_medium_legend = FontProperties(
+    #     family=font_medium.get_family(),
+    #     weight=font_medium.get_weight(),
+    #     size="xx-large",
+    #     fname=font_regular.get_file()
+    # )
 
     fig, axes = plt.subplots(
         nrows=1,
@@ -144,7 +152,7 @@ def plot_isolated_areas(
     fig.suptitle(
         "Road Networks and Isolated Areas per Flooding Return Period",
         color=ft_color,
-        fontsize=28,
+        fontsize=30,
         y=0.95, font=font_bold
     )
 
@@ -200,7 +208,7 @@ def plot_isolated_areas(
         fontsize="xx-large",
         facecolor=bg_color,
         edgecolor=bg_color,
-        prop=font_medium_legend,
+        prop=font_legend,
         bbox_to_anchor=(0.5, 0.025)
     )
 
@@ -236,18 +244,20 @@ def plot_betweenness(
     #     raise ValueError("Parameter `plot_theme` must be `dark` or `light`.")
 
     bg_color = "#000000"
-    ft_color = "#999999"
-    
-    font_bold = pyfonts.load_google_font("Fira Sans", weight="bold")
-    font_medium = pyfonts.load_google_font("Fira Sans", weight="medium")
-    font_regular = pyfonts.load_google_font("Fira Sans", weight="regular")
+    ft_color = "#eeeeee"
 
-    font_medium_legend = FontProperties(
-        family=font_medium.get_family(),
-        weight=font_medium.get_weight(),
-        size="xx-large",
-        fname=font_regular.get_file()
-    )
+    font_bold, font_medium, font_regular, font_legend = get_fonts("Fira Sans")
+
+    # font_bold = pyfonts.load_google_font("Fira Sans", weight="bold")
+    # font_medium = pyfonts.load_google_font("Fira Sans", weight="medium")
+    # font_regular = pyfonts.load_google_font("Fira Sans", weight="regular")
+
+    # font_medium_legend = FontProperties(
+    #     family=font_medium.get_family(),
+    #     weight=font_medium.get_weight(),
+    #     size="xx-large",
+    #     fname=font_regular.get_file()
+    # )
 
     fig, axes = plt.subplots(
         nrows=1,
@@ -260,7 +270,7 @@ def plot_betweenness(
     fig.suptitle(
         "Betweenness Centrality per Flooding Return Period",
         color=ft_color,
-        fontsize=28,
+        fontsize=30,
         y=0.95, font=font_bold
     )
 
@@ -340,7 +350,7 @@ def plot_betweenness(
             fontsize="xx-large",
             facecolor=bg_color,
             edgecolor=bg_color,
-            prop=font_medium_legend,
+            prop=font_legend,
             bbox_to_anchor=(0.5, 0.025)
         )
 
@@ -350,3 +360,61 @@ def plot_betweenness(
             plt.savefig(fp_output, dpi=300)
 
     return fig
+
+def plot_network_access(network_access_per_rp: dict, fp_output: str | Path | None = None):
+    """
+    Creates a line plot of network-wide accessibility scores
+    for baseline condition and each flooding return period.
+    """
+    # sns.set_style('whitegrid')
+    sns.set_context('talk')
+    
+    ft_color = "#000000"
+    bg_color = "#eeeeee"
+
+    font_bold, font_medium, font_regular, font_legend = get_fonts("Fira Sans")
+
+    fig, ax = plt.subplots(figsize=(10, 6), facecolor=bg_color)
+    sns.pointplot(
+        x=network_access_per_rp.keys(),
+        y=network_access_per_rp.values(),
+        marker="s",
+        # estimator="first", 
+        errorbar=None,
+        color=ft_color
+    )
+
+    plt.suptitle(
+        "Network-wide Accessibility across Flooding Return Periods",
+        fontsize=24,
+        font=font_bold,
+        ha="center", y=0.96
+    )
+
+    plt.xlabel("Return Period", font=font_medium, fontsize=20)
+    plt.ylabel("Network Accessibility", font=font_medium, fontsize=20)
+    plt.xticks(ticks=[0, 1, 2, 3], labels=["No Flooding", "5 years", "25 years", "100 years"])
+
+    for rp in network_access_per_rp:
+        access_value = network_access_per_rp[rp]
+        offset = 7.5
+        if rp == "baseline":
+            offset = -7.5
+        plt.text(
+            x=rp,
+            y=access_value + offset,
+            s=f"{access_value}",
+            horizontalalignment="center",
+            verticalalignment="center",
+            color=bg_color,
+            bbox={"facecolor": ft_color, "alpha": 0.8, "edgecolor": "none"},
+            fontsize=16,
+            font=font_regular
+        )
+
+    plt.tight_layout()
+
+    if fp_output:
+        plt.savefig(fp_output)
+    
+    return fig, ax

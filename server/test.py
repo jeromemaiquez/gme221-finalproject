@@ -23,6 +23,7 @@ fp_pop_raster = DATA_DIR / "phl_pop_2025_CN_100m_R2025A_v1.tif"
 fp_pop_points = OUTPUT_DIR / "Antipolo_PopPoints.gpkg"
 fp_isolated_map = OUTPUT_DIR / "Antipolo_MapIsolatedNetwork.png"
 fp_between_map = OUTPUT_DIR / "Antipolo_MapBetweennessCentrality.png"
+fp_network_plot = OUTPUT_DIR / "NetworkAccess_PerFloodRP.png"
 
 # Step 1: define AOI
 
@@ -121,4 +122,9 @@ viz.plot_betweenness(
     fp_output=fp_between_map,
     # plot_theme="light",
     cmap="inferno"
+)
+
+viz.plot_network_access(
+    network_access,
+    fp_network_plot
 )
