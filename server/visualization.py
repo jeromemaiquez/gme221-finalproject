@@ -16,7 +16,7 @@ from pathlib import Path
 
 def get_edge_widths(
     graph_roads: nx.MultiGraph,
-    default_width: float = 0.5
+    default_width: float = 0.7
 ):
     """
     Returns a list of edge widths corresponding to graph edges.
@@ -26,9 +26,9 @@ def get_edge_widths(
     street_widths = {
         "primary": 2,
         "secondary": 1.5,
-        "tertiary": 1,
-        "residential": 0.5,
-        "unclassified": 1
+        "tertiary": 1.2,
+        "residential": 0.7,
+        "unclassified": 1.2
     }
 
     for u, v, data in graph_roads.edges(data=True):
