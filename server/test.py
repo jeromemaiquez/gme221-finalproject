@@ -115,7 +115,10 @@ for fp in fps_flood:
 gdf_entry.to_file(fp_entry)
 
 network_access = models.network_accessibility(gdf_entry)
-print(network_access)
+# print(network_access)
+
+change_in_access = models.change_in_network_access(network_access)
+print(change_in_access)
 
 # Step 7. Plot isolated areas
 viz.plot_isolated_areas(
@@ -135,7 +138,8 @@ viz.plot_betweenness(
 )
 
 viz.plot_network_access(
-    network_access,
+    # network_access,
+    change_in_access,
     fp_network_plot
 )
 

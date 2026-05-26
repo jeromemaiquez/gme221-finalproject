@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick
 from matplotlib.axes import Axes
 from matplotlib import lines as mlines
 from matplotlib.font_manager import FontProperties
@@ -389,20 +390,21 @@ def plot_network_access(network_access_per_rp: dict, fp_output: str | Path | Non
 
     plt.suptitle(
         "Network-wide Accessibility across Flooding Return Periods",
-        fontsize=24,
+        fontsize=22,
         font=font_bold,
         ha="center", y=0.96
     )
 
     plt.xlabel("Return Period", font=font_medium, fontsize=20)
-    plt.ylabel("Network Accessibility", font=font_medium, fontsize=20)
+    plt.ylabel("Network Accessibility (% change)", font=font_medium, fontsize=20)
     plt.xticks(ticks=[0, 1, 2, 3], labels=["No Flooding", "5 years", "25 years", "100 years"])
+    ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0, symbol=None))
 
     for rp in network_access_per_rp:
         access_value = network_access_per_rp[rp]
-        offset = 7.5
+        offset = .035
         if rp == "baseline":
-            offset = -7.5
+            offset = -.035
         plt.text(
             x=rp,
             y=access_value + offset,

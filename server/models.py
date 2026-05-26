@@ -179,3 +179,17 @@ def isolated_areas(graph_roads: nx.MultiGraph):
         graph_isolated_areas = nx.null_graph()
     
     return graph_isolated_areas
+
+def change_in_network_access(network_access: dict):
+    """
+    Returns a dict containing % change in network access
+    from baseline conditions to different flooding return periods.
+    """
+    baseline = network_access["baseline"]
+
+    change_in_access = {}
+
+    for rp in network_access:
+        change_in_access[rp] = round((network_access[rp] - baseline) / baseline, 2)
+
+    return change_in_access
