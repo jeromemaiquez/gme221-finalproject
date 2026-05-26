@@ -408,7 +408,7 @@ def plot_network_access(network_access_per_rp: dict, fp_output: str | Path | Non
         plt.text(
             x=rp,
             y=access_value + offset,
-            s=f"{access_value}",
+            s=f"{round(access_value * 100, 0)}",
             horizontalalignment="center",
             verticalalignment="center",
             color=bg_color,
